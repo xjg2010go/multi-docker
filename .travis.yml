@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t lxin/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true lxin/react-test npm test
+
+after_sucess:
+  - docker build -t lxin/multi-client ./client
+  - docker build -t lxin/multi-nginx ./nginx
+  - docker build -t lxin/multi-server ./server
+  - docker build -t lxin/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push lxin/multi-client
+  - docker push lxin/multi-nginx
+  - docker push lxin/multi-server
+  - docker push lxin/multi-worker
